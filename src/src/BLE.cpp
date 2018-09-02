@@ -23,7 +23,7 @@ BLE::BLE(LED &led)
     pCharacteristic->setCallbacks(pCallbacks.get());
 
     // set default value
-    pCharacteristic->setValue("#000000");
+    pCharacteristic->setValue("00000000");
 
     pService->start();
 
