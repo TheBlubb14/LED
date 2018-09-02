@@ -13,17 +13,17 @@ BLE::BLE(LED &led)
     BLEDevice::init("LED Streifen");
     pServer = BLEDevice::createServer();
     pService = pServer->createService(SERVICE_UUID);
-    pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID, 
-                                                        BLECharacteristic::PROPERTY_READ | 
-                                                        BLECharacteristic::PROPERTY_WRITE | 
-                                                        BLECharacteristic::PROPERTY_NOTIFY);
+    pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID,
+                                                     BLECharacteristic::PROPERTY_READ |
+                                                         BLECharacteristic::PROPERTY_WRITE |
+                                                         BLECharacteristic::PROPERTY_NOTIFY);
 
     // set callback
     pCallbacks = std::unique_ptr<MyCallbacks>(new MyCallbacks(led));
     pCharacteristic->setCallbacks(pCallbacks.get());
 
     // set default value
-    pCharacteristic->setValue("00000000");
+    pCharacteristic->setValue("000000000");
 
     pService->start();
 
@@ -40,6 +40,8 @@ BLE::MyCallbacks::MyCallbacks(LED &led)
 void BLE::MyCallbacks::onWrite(BLECharacteristic *pCharacteristic)
 {
     std::string value = pCharacteristic->getValue();
+    std::string mode = value.substr(0, 1);
+    value = value.substr(1, value.length());
 
     if (value.length() > 0)
     {
@@ -48,9 +50,13 @@ void BLE::MyCallbacks::onWrite(BLECharacteristic *pCharacteristic)
         //     Serial.print(value[i]);
 
         // Serial.println();
-        RGBW rgbw = {static_cast<uint32_t>(std::strtoul(value.c_str(), nullptr, 16))};
-        
-        // Serial.println("converted: " + String(rgbw.r) + " " + String(rgbw.g) + " " + String(rgbw.b) + " " + String(rgbw.w));
-        _led.WriteToAllLeds(rgbw.r, rgbw.g, rgbw.b, rgbw.w);
+
+        if (mode == "0")
+        {
+            RGBW rgbw = {static_cast<uint32_t>(std::strtoul(value.c_str(), nullptr, 16))};
+
+            // Serial.println("converted: " + String(rgbw.r) + " " + String(rgbw.g) + " " + String(rgbw.b) + " " + String(rgbw.w));
+            _led.WriteToAllLeds(rgbw.r, rgbw.g, rgbw.b, rgbw.w);
+        }
     }
 }

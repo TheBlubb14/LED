@@ -42,6 +42,8 @@ namespace BLEClient
             this.colorCharacteristic = this.ledServive.GetCharacteristics(COLOR_CHARACTERISTIC).FirstOrDefault();
 
             var color = await this.ReadColor();
+            color = color.Substring(1);
+
             this.Text = color;
 
             var r = color[0].ToString() + color[1].ToString();
@@ -83,7 +85,8 @@ namespace BLEClient
 
         private async Task<bool> WriteColor(string color)
         {
-            var bytes = System.Text.Encoding.ASCII.GetBytes(color);
+            // "0" for mode
+            var bytes = System.Text.Encoding.ASCII.GetBytes("0" + color);
             return await this.colorCharacteristic.WriteValueAsync(bytes.AsBuffer()).AsTask() == GattCommunicationStatus.Success;
         }
 
