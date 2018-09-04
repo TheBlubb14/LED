@@ -13,24 +13,29 @@
 class BLE
 {
   public:
-    BLE(LED &led);
+	BLE(LED &led);
+
   private:
-  
-    class MyCallbacks : public BLECharacteristicCallbacks
-    {
-      private:
-        LED &_led;
+	class MyCallbacks : public BLECharacteristicCallbacks
+	{
+	  private:
+		LED &_led;
+		void FullColor(std::string value);
+		void ColorGradient(std::string value);
 
-      public:
-        MyCallbacks(LED &led);
+	  public:
+		MyCallbacks(LED &led);
 
-        void onWrite(BLECharacteristic *pCharacteristic);
-    };
-    BLEServer *pServer;
-    BLEService *pService;
-    BLECharacteristic *pCharacteristic;
-    BLEAdvertising *pAdvertising;
-    std::unique_ptr<MyCallbacks> pCallbacks;
+		void onWrite(BLECharacteristic *pCharacteristic);
+	};
+
+	BLEServer *pServer;
+	BLEService *pService;
+	BLEAdvertising *pAdvertising;
+	std::unique_ptr<MyCallbacks> pCallbacks;
+
+	BLECharacteristic *pFullColorCharacteristic;
+	BLECharacteristic *pColorGradientCharacteristic;
 };
 
 #endif /*_BLE_H_*/
