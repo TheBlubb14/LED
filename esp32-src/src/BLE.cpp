@@ -4,9 +4,10 @@
 #include <string>
 #include <cstdlib>
 
-#define SERVICE_UUID "67555B1C-DF9A-4E51-842C-B9D02692D6CA"
-#define FULLCOLOR_CHARACTERISTIC_UUID "D6441569-DEAC-4F6B-A7B6-C95EFFB2CC45"
-#define COLORGRADIENT_CHARACTERISTIC_UUID "55A5527C-E720-4294-A3AD-FB46DCB00AAE"
+// UUID HAVE TO BE LOWER CASE
+#define SERVICE_UUID "67555b1c-df9a-4e51-842c-b9d02692d6ca"
+#define FULLCOLOR_CHARACTERISTIC_UUID "d6441569-deac-4f6b-a7b6-c95effb2cc45"
+#define COLORGRADIENT_CHARACTERISTIC_UUID "55a5527c-e720-4294-a3ad-fb46dcb00aae"
 
 BLE::BLE(LED &led)
 {
@@ -20,19 +21,15 @@ BLE::BLE(LED &led)
 															  BLECharacteristic::PROPERTY_READ |
 																  BLECharacteristic::PROPERTY_WRITE |
 																  BLECharacteristic::PROPERTY_NOTIFY);
+	pFullColorCharacteristic->setCallbacks(pCallbacks.get());
+	pFullColorCharacteristic->setValue("00000000");
 
 	pColorGradientCharacteristic = pService->createCharacteristic(COLORGRADIENT_CHARACTERISTIC_UUID,
 																  BLECharacteristic::PROPERTY_READ |
 																	  BLECharacteristic::PROPERTY_WRITE |
 																	  BLECharacteristic::PROPERTY_NOTIFY);
-
-	// set callback
-	pFullColorCharacteristic->setCallbacks(pCallbacks.get());
-	pColorGradientCharacteristic->setCallbacks(pCallbacks.get());
-
-	// set default value
-	pFullColorCharacteristic->setValue("00000000");
 	pColorGradientCharacteristic->setValue("0000000000000000");
+	pColorGradientCharacteristic->setCallbacks(pCallbacks.get());
 
 	pService->start();
 
@@ -49,29 +46,19 @@ BLE::MyCallbacks::MyCallbacks(LED &led)
 void BLE::MyCallbacks::onWrite(BLECharacteristic *pCharacteristic)
 {
 	std::string uuid = pCharacteristic->getUUID().toString();
-
-	Serial.println("uuid:");
-	Serial.println(uuid.c_str());
-
 	std::string value = pCharacteristic->getValue();
+
+	Serial.println(uuid.c_str());
 
 	if (value.length() < 1)
 		return;
 
-	std::string vvv = "67555B1C-DF9A-4E51-842C-B9D02692D6CA";
-	if (uuid == vvv)
-	{
-		Serial.println("JUP");
-	}
-
 	if (uuid == FULLCOLOR_CHARACTERISTIC_UUID)
 	{
-		Serial.println("if full");
 		FullColor(value);
 	}
 	else if (uuid == COLORGRADIENT_CHARACTERISTIC_UUID)
 	{
-		Serial.println("if grad");
 		ColorGradient(value);
 	}
 

@@ -12,11 +12,15 @@ namespace BLEClient
     public partial class Form1 : Form
     {
         public const ulong ADRESS = 198900699824151;
+
+        // GUID have to be lower case
         public static readonly Guid LED_SERVICE = new Guid("67555b1c-df9a-4e51-842c-b9d02692d6ca");
-        public static readonly Guid COLOR_CHARACTERISTIC = new Guid("d6441569-deac-4f6b-a7b6-c95effb2cc45");
+        public static readonly Guid FULLCOLOR_CHARACTERISTIC = new Guid("d6441569-deac-4f6b-a7b6-c95effb2cc45");
+        public static readonly Guid COLORGRADIENT_CHARACTERISTIC = new Guid("55a5527c-e720-4294-a3ad-fb46dcb00aae");
 
         private GattDeviceService ledServive;
-        private GattCharacteristic colorCharacteristic;
+        private GattCharacteristic fullColorCharacteristic;
+        private GattCharacteristic colorGradientCharacteristic;
 
         private bool suspendChanged = false;
         private System.Timers.Timer timer;
@@ -39,10 +43,13 @@ namespace BLEClient
         {
             var device = await BluetoothLEDevice.FromBluetoothAddressAsync(ADRESS).AsTask();
             this.ledServive = device.GetGattService(LED_SERVICE);
-            this.colorCharacteristic = this.ledServive.GetCharacteristics(COLOR_CHARACTERISTIC).FirstOrDefault();
+
+            // NOTE: if u want to add more Characteristic then you have to 
+            // remove the device from windows10 devices and pair it again, to get the new Characteristics !!!
+            this.fullColorCharacteristic = this.ledServive.GetCharacteristics(FULLCOLOR_CHARACTERISTIC).FirstOrDefault();
+            this.colorGradientCharacteristic = this.ledServive.GetCharacteristics(COLORGRADIENT_CHARACTERISTIC).FirstOrDefault();
 
             var color = await this.ReadColor();
-            color = color.Substring(1);
 
             this.Text = color;
 
@@ -75,7 +82,7 @@ namespace BLEClient
 
         private async Task<string> ReadColor()
         {
-            var result = await this.colorCharacteristic.ReadValueAsync().AsTask();
+            var result = await this.fullColorCharacteristic.ReadValueAsync().AsTask();
             var status = result.Status;
             using (var reader = DataReader.FromBuffer(result.Value))
             {
@@ -85,9 +92,8 @@ namespace BLEClient
 
         private async Task<bool> WriteColor(string color)
         {
-            // "0" for mode
-            var bytes = System.Text.Encoding.ASCII.GetBytes("0" + color);
-            return await this.colorCharacteristic.WriteValueAsync(bytes.AsBuffer()).AsTask() == GattCommunicationStatus.Success;
+            var bytes = System.Text.Encoding.ASCII.GetBytes(color);
+            return await this.fullColorCharacteristic.WriteValueAsync(bytes.AsBuffer()).AsTask() == GattCommunicationStatus.Success;
         }
 
         private void Write()
@@ -112,9 +118,11 @@ namespace BLEClient
             }
         }
 
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
-            this.Write();
+            //this.Write();
+            var bytes = System.Text.Encoding.ASCII.GetBytes("11223344112341234");
+            await this.colorGradientCharacteristic.WriteValueAsync(bytes.AsBuffer()).AsTask();
         }
 
         #region Form events
