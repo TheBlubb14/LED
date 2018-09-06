@@ -26,6 +26,8 @@ namespace BLEClient
         private System.Timers.Timer timer;
         private bool timerIsRunning = false;
 
+        private string color = "00000000";
+
         public Form1()
         {
             this.InitializeComponent();
@@ -68,14 +70,9 @@ namespace BLEClient
 
         private async void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            var r = this.trackBarR.Value.ToString("X").PadLeft(2, '0');
-            var g = this.trackBarG.Value.ToString("X").PadLeft(2, '0');
-            var b = this.trackBarB.Value.ToString("X").PadLeft(2, '0');
-            var w = this.trackBarW.Value.ToString("X").PadLeft(2, '0');
 
-            var color = r + g + b + w;
-            this.Text = color;
-            await this.WriteColor(color);
+            this.Text = this.color;
+            await this.WriteColor(this.color);
 
             this.timerIsRunning = false;
         }
@@ -108,6 +105,33 @@ namespace BLEClient
             this.timerIsRunning = true;
         }
 
+        private void WriteFullColor()
+        {
+            var r = this.trackBarR.Value.ToString("X").PadLeft(2, '0');
+            var g = this.trackBarG.Value.ToString("X").PadLeft(2, '0');
+            var b = this.trackBarB.Value.ToString("X").PadLeft(2, '0');
+            var w = this.trackBarW.Value.ToString("X").PadLeft(2, '0');
+
+            this.color = r + g + b + w;
+            Write();
+        }
+
+        private void WriteColorGradient()
+        {
+            var r1 = Convert.ToInt16(this.numericUpDownGradientR1.Value).ToString("X").PadLeft(2, '0');
+            var g1 = Convert.ToInt16(this.numericUpDownGradientG1.Value).ToString("X").PadLeft(2, '0');
+            var b1 = Convert.ToInt16(this.numericUpDownGradientB1.Value).ToString("X").PadLeft(2, '0');
+            var w1 = Convert.ToInt16(this.numericUpDownGradientW1.Value).ToString("X").PadLeft(2, '0');
+                                                       
+            var r2 = Convert.ToInt16(this.numericUpDownGradientR2.Value).ToString("X").PadLeft(2, '0');
+            var g2 = Convert.ToInt16(this.numericUpDownGradientG2.Value).ToString("X").PadLeft(2, '0');
+            var b2 = Convert.ToInt16(this.numericUpDownGradientB2.Value).ToString("X").PadLeft(2, '0');
+            var w2 = Convert.ToInt16(this.numericUpDownGradientW2.Value).ToString("X").PadLeft(2, '0');
+
+            this.color = r1 + g1 + b1 + w1 + r2 + g2 + b2 + w2;
+            Write();
+        }
+
         private void buttonChooseColor_Click_1(object sender, EventArgs e)
         {
             if (this.colorDialog1.ShowDialog() == DialogResult.OK)
@@ -118,11 +142,9 @@ namespace BLEClient
             }
         }
 
-        private async void buttonUpdate_Click(object sender, EventArgs e)
+        private void buttonUpdate_Click(object sender, EventArgs e)
         {
-            //this.Write();
-            var bytes = System.Text.Encoding.ASCII.GetBytes("11223344112341234");
-            await this.colorGradientCharacteristic.WriteValueAsync(bytes.AsBuffer()).AsTask();
+            this.WriteFullColor();
         }
 
         #region Form events
@@ -132,7 +154,7 @@ namespace BLEClient
 
             if (!this.suspendChanged)
             {
-                this.Write();
+                this.WriteFullColor();
             }
         }
 
@@ -142,7 +164,7 @@ namespace BLEClient
 
             if (!this.suspendChanged)
             {
-                this.Write();
+                this.WriteFullColor();
             }
         }
 
@@ -152,7 +174,7 @@ namespace BLEClient
 
             if (!this.suspendChanged)
             {
-                this.Write();
+                this.WriteFullColor();
             }
         }
 
@@ -162,7 +184,7 @@ namespace BLEClient
 
             if (!this.suspendChanged)
             {
-                this.Write();
+                this.WriteFullColor();
             }
         }
 
@@ -186,5 +208,35 @@ namespace BLEClient
             this.trackBarW.Value = (int)this.numericUpDownW.Value;
         }
         #endregion
+
+        private void buttonGradient1_Click(object sender, EventArgs e)
+        {
+            if (this.colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                this.numericUpDownGradientR1.Value = this.colorDialog1.Color.R;
+                this.numericUpDownGradientG1.Value = this.colorDialog1.Color.G;
+                this.numericUpDownGradientB1.Value = this.colorDialog1.Color.B;
+            }
+        }
+
+        private void buttonGradient2_Click(object sender, EventArgs e)
+        {
+            if (this.colorDialog1.ShowDialog() == DialogResult.OK)
+            {
+                this.numericUpDownGradientR2.Value = this.colorDialog1.Color.R;
+                this.numericUpDownGradientG2.Value = this.colorDialog1.Color.G;
+                this.numericUpDownGradientB2.Value = this.colorDialog1.Color.B;
+            }
+        }
+
+        private void buttonGradientUpdate_Click(object sender, EventArgs e)
+        {
+            WriteColorGradient();
+        }
+
+        private void numericUpDownGradientG1_ValueChanged(object sender, EventArgs e)
+        {
+            WriteColorGradient();
+        }
     }
 }
